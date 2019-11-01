@@ -11,7 +11,7 @@ import { AppState } from '../app/interfaces/app.state';
 })
 export class AppComponent implements OnInit{
   items: Item[] = [];
-  currentBasekt: Item[];
+  currentBasket: Item[] = [];
 
   constructor(
     public store: Store<AppState>
@@ -19,12 +19,14 @@ export class AppComponent implements OnInit{
     this.store.pipe(select(state => state.basket))
     .subscribe(basket => {
       if (basket && this.items ) {
-        this.currentBasekt = basket.items
+        this.currentBasket = basket.items
+        //console.log("Basket ", this.currentBasket, "Items in basket ", basket.items)
       }
     });
   }
 
   addItem(item: Item) {
+    //debugger
     this.store.dispatch(new BasketAddAction(item));
   }
 

@@ -3,7 +3,14 @@
     <button (click)="addItem(item)">Add</button>
     <button (click)="removeItem(item)">Remove</button>
 </div>
-    <br/>
-<div *ngFor="let item of currentBasket" >
-  {{item.name}}
+<div *ngIf="currentBasket.length" >
+  <h4> Items in Basket:</h4>
+  <ul>
+    <li *ngFor="let item of currentBasket">
+        <p> {{ item.name }} </p>
+    </li>
+  </ul>
+</div>
+<div *ngIf="!currentBasket.length">
+  <h4>The basket is empty</h4>
 </div>
