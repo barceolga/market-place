@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Item } from '../app/interfaces/item';
 import { select, Store } from '@ngrx/store';
-import { BasketAddAction, BasketRemoveAction } from '../app/redux/basket.action';
+import { BasketActionAdd, BasketActionRemove} from '../app/redux/basket.action';
 import { AppState } from '../app/interfaces/app.state';
 
+export const addItemToBasket = (items: Item[], item: Item) => {
+  items.push(item)
+}
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -12,6 +15,7 @@ import { AppState } from '../app/interfaces/app.state';
 export class AppComponent implements OnInit{
   items: Item[] = [];
   currentBasket: Item[] = [];
+  
 
   constructor(
     public store: Store<AppState>
@@ -27,11 +31,11 @@ export class AppComponent implements OnInit{
 
   addItem(item: Item) {
     //debugger
-    this.store.dispatch(new BasketAddAction(item));
+    this.store.dispatch(BasketActionAdd({item: item}));
   }
 
   removeItem(item: Item) {
-    this.store.dispatch(new BasketRemoveAction(item));
+    this.store.dispatch(BasketActionRemove({item: item}));
   }
 
   ngOnInit() {
