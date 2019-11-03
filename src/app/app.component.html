@@ -1,15 +1,19 @@
 <div *ngFor="let item of items">
-    {{item.id}} - {{item.name}}<br>
+    {{item.id}} - {{item.name}} - {{item.price}} €<br>
     <button (click)="addItem(item)">Add</button>
     <button (click)="removeItem(item)">Remove</button>
 </div>
 <div *ngIf="currentBasket.length" >
-  <h4> Items in Basket:</h4>
+  <h4> You have {{currentBasket.length}} products in the basket:</h4>
   <ul>
     <li *ngFor="let item of currentBasket">
         <p> {{ item.name }} </p>
+        <p> Price: {{ item.price }} € </p>
     </li>
   </ul>
+  <button (click)="getSum(currentBasket)">Get the price</button>
+  <p> Your shopping price is: {{sum}} €</p>
+
 </div>
 <div *ngIf="!currentBasket.length">
   <h4>The basket is empty</h4>
