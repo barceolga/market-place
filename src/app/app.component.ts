@@ -1,11 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Item } from '../app/interfaces/item';
 import { select, Store } from '@ngrx/store';
-import { BasketActionAdd, BasketActionRemove} from '../app/redux/basket.action';
+import { BasketAddAction, BasketRemoveAction} from '../app/redux/basket.action';
 import { AppState } from '../app/interfaces/app.state';
+import { from } from 'rxjs';
 
 export const addItemToBasket = (items: Item[], item: Item) => {
   items.push(item)
+}
+
+export const sumPrice = (items: Item[], item: Item) => {
+  return items.map(item => item.price).reduce((acc, val) => acc + val)
 }
 @Component({
   selector: 'app-root',
@@ -14,9 +19,11 @@ export const addItemToBasket = (items: Item[], item: Item) => {
 })
 export class AppComponent implements OnInit{
   items: Item[] = [];
+  item: Item;
+  sum: Number;
   currentBasket: Item[] = [];
   
-
+ //TODO: make store to accept 2 values: basket and sum. You can use combineLatest for this purpose
   constructor(
     public store: Store<AppState>
   ) {
@@ -31,15 +38,18 @@ export class AppComponent implements OnInit{
 
   addItem(item: Item) {
     //debugger
-    this.store.dispatch(BasketActionAdd({item: item}));
+    this.store.dispatch( new BasketAddAction(item));
   }
 
   removeItem(item: Item) {
-    this.store.dispatch(BasketActionRemove({item: item}));
+    this.store.dispatch(new BasketRemoveAction(item));
+  }
+
+  getSum( items: Item[]) {
+    this.sum =  sumPrice(this.currentBasket, this.item)
   }
 
   ngOnInit() {
-    this.items.push({ id: '1', name: 'item1'}, {id: '2', name: 'item2'}, {id: '3', name: 'item3'});
-
+    this.items.push({ id: '1', name: 'milk', price: 2}, {id: '2', name: 'bread', price: 1.5}, {id: '3', name: 'ham', price: 1.5 });
   }
 }
