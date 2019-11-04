@@ -5,6 +5,7 @@ import { isNgTemplate } from '@angular/compiler';
 export namespace BasketActionTypes {
     export const ADD = '[Basket] add';
     export const REMOVE = '[Basket] remove';
+    export const SUM = '[Price] sum'
 }
 
 export class BasketAddAction implements Action {
@@ -25,8 +26,17 @@ export class BasketRemoveAction implements Action {
     }
 }
 
+export class PriceSumAction implements Action {
+    readonly type = BasketActionTypes.SUM;
+    public payload: Item;
+    
+    constructor(public items: Item[], public item: Item){
+        this.payload = item;
+    }
+}
 
- export type BasketAction = BasketAddAction | BasketRemoveAction 
+
+ export type BasketAction = BasketAddAction | BasketRemoveAction | PriceSumAction
 
 // export const BasketActionAdd = createAction(
 //     "[Basket] add",
