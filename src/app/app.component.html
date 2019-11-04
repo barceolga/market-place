@@ -5,19 +5,21 @@
           <li *ngFor="let item of items">
             <p>{{item.id}}.  {{item.name}}, {{item.price}} €</p>
             <button (click)="addItem(item)">Add</button>
-            <button class="remove" (click)="removeItem(item)">Remove</button>
           </li>
       </ul>
   </div>
-<div *ngIf="currentBasket.length" >
+<div *ngIf="currentBasket.length " >
   <h4> You have <span>{{currentBasket.length}}</span> products in the basket:</h4>
   <ul>
-    <li *ngFor="let item of currentBasket">
+    <li *ngFor="let item of basket$ | async">
         <p> Product: {{ item.name }} </p>
         <p> Price: {{ item.price }} € </p>
+        <p> Quantity: {{ item.quantity }}</p>
+        <button class="remove" (click)="removeItem(item)">Remove</button>
     </li>
   </ul>
- <h4> Total purchase price: <span>{{getSum(currentBasket)}} € </span></h4>
+ <h4> Total purchase price: <span>{{sum$ | async}} €</span> , discount: <span>{{ discount$ | async }}</span></h4>
+ <h4>Final price after discount: <span>{{ finalPrice }}</span></h4>
 
 </div>
 <div *ngIf="!currentBasket.length">
