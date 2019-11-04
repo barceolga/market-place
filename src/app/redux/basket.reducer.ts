@@ -1,59 +1,51 @@
-import { BasketState } from '../interfaces/basket.state';
-import { PriceState } from '../interfaces/price.state'
-import { AppState } from '../interfaces/app.state';
-import { BasketAction, BasketActionTypes} from './basket.action';
-import { State, createReducer, on } from '@ngrx/store';
-import { addItemToBasket, sumPrice } from '../app.component'
+import { BasketState, BasketItem } from "../interfaces/basket.state";
+import { PriceState } from "../interfaces/price.state";
+import { AppState } from "../interfaces/app.state";
+import {
+  BasketActionTypes,
+  BasketActionAdd,
+  BasketActionRemove
+} from "./basket.action";
+import { State, createReducer, on, createSelector } from "@ngrx/store";
+import { addItemToBasket, sumPrice } from "../app.component";
 
 const initialBasketState: BasketState = {
-    items: []
-}
+  items: []
+};
 
-const initialPriceState: PriceState = {
-    price: 0
-}
-const initialState: AppState = {
-    basket: initialBasketState,
-    price: initialPriceState
-}
-//TODO: create an interface sum with one property called sum with type Number
-// TODO: add sum as independent state in appState 
+// TODO: create an interface sum with one property called sum with type Number
+// TODO: add sum as independent state in appState
 // TODO: create a file called sum.action.ts to define the type of action
 // TODO: refactor reducer to make it work with two state values: basket and sum
-export function basketActionReducer( state: BasketState = initialBasketState, action: BasketAction): BasketState {
-    switch (action.type) {
-        case BasketActionTypes.ADD:
-            state.items.push(action.payload);
-            return {
-                ...state,
-                items: state.items
-            };
-        case BasketActionTypes.REMOVE:
-            const index: number = state.items.indexOf(action.payload);
-            if (index != -1) {
-                state.items.splice(index, 1)
-            }
-            return {
-                ...state,
-                items: state.items
-            };
-        // case BasketActionTypes.SUM:
-        //     this.sum =  sumPrice(state.basket.items, action.payload)
-        //     return {
-        //         ...state,
-        //         price:  sum
-        //     }
-    }
-}
+const EqId = (id: string) => item => id === item.id;
+const negateFn = fn => (...args) => !fn(...args);
 
-// export const basketActionReducer = createReducer(
-//     initialBasketState,
-//     on(BasketActionAdd, (state, action) => ({
-//         ...state,
-//         items: { ...state.items, addItemToBasket(items, item)}
-//     })),
-//     on(BasketActionRemove, (state, action) => ({
-//         ...state,
-//         items: {}
-//     }))
-// )
+export const normalizeBasketItems = (items: BasketItem[]) =>
+  items.reduce((acc, item, index, array) => {
+    const existingItemIndex = acc.findIndex(EqId(item.id));
+    if (existingItemIndex !== -1) {
+      acc[existingItemIndex].quantity++;
+      return acc;
+    }
+    return [...acc, item];
+  }, []);
+
+export const basketActionReducer = createReducer(
+  initialBasketState,
+  on(BasketActionAdd, (state, action) => ({
+    ...state,
+    items: normalizeBasketItems([
+      ...state.items,
+      { ...action.item, quantity: 1 }
+    ])
+  })),
+  on(BasketActionRemove, (state, action) => ({
+    ...state,
+    items: state.items.filter(negateFn(EqId(action.item.id)))
+  }))
+);
+
+export const basketSelector = createSelector(
+  (state: AppState) => state.basket,
+  (state: BasketState) => state.items
+);
