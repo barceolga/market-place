@@ -19,7 +19,8 @@
     </li>
   </ul>
  <h4> Total purchase price: <span>{{sum$ | async}} €</span> , discount: <span>{{ discount$ | async }}</span></h4>
- <h4>Final price after discount: <span>{{ finalPrice }}</span></h4>
+ <h4 *ngIf="freeCheese"> You have an extra cheese for freee!</h4>
+ <h4>Final price after discount: <span>{{ finalPrice$ }}</span></h4>
 
 </div>
 <div *ngIf="!currentBasket.length">
