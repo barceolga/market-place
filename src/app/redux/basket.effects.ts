@@ -11,7 +11,7 @@ export class BasketEffects {
     () => {
       return this.actions$.pipe(
         tap(action => {
-          console.log("Action listener:", action);
+          // console.log("Action listener:", action);
         })
       );
     },
@@ -24,27 +24,24 @@ export class BasketEffects {
       filter((action: any) => action.item.id === "4"),
       map(action =>
         BasketActionAdd({
-          item: { id: "6", name: "cheese", price: 2.75 },
+          item: { id: "6", name: "cheese", price: 0},
           quantity: 1
-        })
+        }),
       )
     );
   });
 
-  discountOnHam = createEffect(
-    () => {
-      return this.actions$.pipe(
-        ofType("[Basket] add"),
-        filter((action: any) => action.item.id === "3"),
-        map(action =>
-          SetDiscountAction({
-            discount: 5
-          })
-        )
-      );
-    }
-    //{ dispatch: false }
-  );
+  discountOnHam = createEffect(() => {
+    return this.actions$.pipe(
+      ofType("[Basket] add"),
+      filter((action: any) => action.item.id === "3"),
+      map(action =>
+        SetDiscountAction({
+          discount: 5
+        })
+      )
+    );
+  });
 
   constructor(private actions$: Actions) {}
 }
