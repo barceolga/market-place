@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { select, Store } from "@ngrx/store";
 import { combineLatest, Observable } from "rxjs";
-import { map } from "rxjs/operators";
+import { map, tap } from "rxjs/operators";
 
 import {
   BasketActionAdd,
@@ -16,19 +16,21 @@ export const addItemToBasket = (items: Item[], item: Item) => {
   items.push(item);
 };
 
-export const sumPrice = (items: BasketItem[]) => {
-  if (items.length)
-    return items.map(item => item.price * item.quantity).reduce((acc, val) => acc + val);
-};
+export const sumPrice = (items: BasketItem[]) =>
+  items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
 export const getTotalPrice = (sum, discount) => {
   let total = 0;
-  if (sum && discount>0) {
-    total = Math.abs(sum) - ((Math.abs(discount) /100) * Math.abs(sum));
+  if ( discount > 0) {
+    total =
+      Math.round(
+        (Math.abs(sum) - (Math.abs(discount) / 100) * Math.abs(sum)) * 100
+      ) / 100;
+  } else {
+    total = sum;
   }
-  total = sum
   return total;
-}
+};
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
@@ -41,11 +43,11 @@ export class AppComponent implements OnInit {
   quantity: Number = 0;
   discount: Number;
   discount$: Observable<Number>;
-  finalPrice: Number
+  finalPrice: Number;
 
   quantity$: Observable<Number>;
   sum$: Observable<Number>;
-  finalPrice$: Observable<Number>
+  finalPrice$: Observable<Number>;
   basket$: Observable<BasketItem[]>;
   //discounts$;
 
@@ -81,10 +83,12 @@ export class AppComponent implements OnInit {
     this.sum$ = this.basket$.pipe(map(sumPrice));
     //  TODO: get the value of the sum in order to calculate the final price
     // Maybe using effects will work here
-    this.sum$.subscribe(value => (this.sum = value))
-    this.discount$.subscribe(value => ( this.discount = value))
-    console.log("Sum & discount ", this.sum, this.discount)
-    this.finalPrice = getTotalPrice(this.sum, this.discount)
+
+    // BehaviourSubject for this.sum$ and this.discount$
+    this.sum$.subscribe(value => (this.sum = value));
+    this.discount$.subscribe(value => (this.discount = value));
+    
+    console.log("Sum & discount ", this.sum, this.discount);
   }
 
   addItem(item: Item) {
@@ -105,4 +109,5 @@ export class AppComponent implements OnInit {
       { id: "6", name: "cheese", price: 2.75 }
     );
   }
+   
 }
