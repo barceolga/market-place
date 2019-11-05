@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { select, Store } from "@ngrx/store";
-import { combineLatest, Observable } from "rxjs";
-import { map, tap } from "rxjs/operators";
+import { combineLatest, Observable, BehaviorSubject } from "rxjs";
+import { map, filter } from "rxjs/operators";
 
 import {
   BasketActionAdd,
@@ -21,7 +21,7 @@ export const sumPrice = (items: BasketItem[]) =>
 
 export const getTotalPrice = (sum, discount) => {
   let total = 0;
-  if ( discount > 0) {
+  if (discount > 0) {
     total =
       Math.round(
         (Math.abs(sum) - (Math.abs(discount) / 100) * Math.abs(sum)) * 100
@@ -40,18 +40,22 @@ export class AppComponent implements OnInit {
   items: Item[] = [];
   item: Item;
   sum: Number;
+  sum$: Observable<Number>;
+  sumSubject$: BehaviorSubject<Number>;
   quantity: Number = 0;
+  quantity$: Observable<Number>;
   discount: Number;
   discount$: Observable<Number>;
+  discountSubject$: BehaviorSubject<Number>;
   finalPrice: Number;
-
-  quantity$: Observable<Number>;
-  sum$: Observable<Number>;
   finalPrice$: Observable<Number>;
   basket$: Observable<BasketItem[]>;
+  currentBasket: Item[] = [];
+  currentBasket$: Observable<BasketItem[]>
+  freeCheese: boolean = false
+  freeCheeseArrS: Observable<BasketItem[]>;
   //discounts$;
 
-  currentBasket: Item[] = [];
   currentPrice: Number = 0;
   subscription: any;
 
@@ -76,27 +80,48 @@ export class AppComponent implements OnInit {
 
   constructor(public store: Store<AppState>) {
     this.basket$ = this.store.pipe(select(basketSelector));
-    this.basket$.subscribe(value => (this.currentBasket = value));
     this.discount$ = this.store.pipe(select(state => state.discount));
-    //this.discount$ = this.basket$.pipe(map(calculateDiscount));
-    //this.quantity$ = this.basket$.subscribe(value => (this.quantity =  value.quantity));
-    this.sum$ = this.basket$.pipe(map(sumPrice));
-    //  TODO: get the value of the sum in order to calculate the final price
-    // Maybe using effects will work here
+    //  this.basket$.pipe(map(basket => {
+    //   console.log(basket);
+    //   this.currentBasket = basket;
+    //   console.log(this.currentBasket);
+    // }));
 
-    // BehaviourSubject for this.sum$ and this.discount$
-    this.sum$.subscribe(value => (this.sum = value));
-    this.discount$.subscribe(value => (this.discount = value));
-    
-    console.log("Sum & discount ", this.sum, this.discount);
+    this.sum$ = this.basket$.pipe(map(sumPrice));
+
+    // This is still not working as it should, need figure out what's missing here
+    this.finalPrice$ = combineLatest(this.basket$, this.discount$).pipe(
+      map(basketDiscountData => {
+        const basket = basketDiscountData[0];
+        const discount = basketDiscountData[1];
+        return getTotalPrice(sumPrice(basket), discount);
+      })
+    );
+
+    //console.log(this.finalPrice$)
+    this.basket$.subscribe(value => (
+      this.currentBasket = value
+        )
+      );
+
+
   }
 
   addItem(item: Item) {
     this.store.dispatch(BasketActionAdd({ item, quantity: 1 }));
+    this.gotExtraCheese()
   }
 
   removeItem(item: Item) {
     this.store.dispatch(BasketActionRemove({ item }));
+  }
+ // This is also not working
+  gotExtraCheese() {
+    const extraCheese = {id: "6", name: "cheese", price: 0, quantity: 1}
+    if (this.currentBasket.includes(extraCheese)) {
+      //console.log(this.currentBasket.includes(extraCheese))
+      this.freeCheese =true;
+    }
   }
 
   ngOnInit() {
@@ -109,5 +134,6 @@ export class AppComponent implements OnInit {
       { id: "6", name: "cheese", price: 2.75 }
     );
   }
-   
+  
+
 }
