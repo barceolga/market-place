@@ -1,35 +1,57 @@
-import { TestBed, async } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { AppComponent } from './app.component';
+import { TestBed, async } from "@angular/core/testing";
+import { RouterTestingModule } from "@angular/router/testing";
+import { AppComponent } from "./app.component";
+import { StoreModule } from "@ngrx/store";
+import { basketActionReducer } from "./redux/basket.reducer";
+import { discountReducer } from "./redux/discount.reducer";
 
-describe('AppComponent', () => {
+describe("AppComponent", () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
+        RouterTestingModule,
+        StoreModule.forRoot({
+          basket: basketActionReducer,
+          discount: discountReducer
+        })
       ],
-      declarations: [
-        AppComponent
-      ],
+      declarations: [AppComponent]
     }).compileComponents();
   }));
 
-  it('should create the app', () => {
+  it("should create the app", () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'market-place'`, () => {
+  it("should have empty basket on start", done => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual('market-place');
+    app.basket$.subscribe(basket => {
+      expect(basket.length).toEqual(0);
+      done();
+    });
   });
 
-  it('should render title', () => {
+  it("should properly add items", done => {
     const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain('market-place app is running!');
+    const app = fixture.debugElement.componentInstance;
+    const item = { id: "1", name: "test", price: 5 };
+    app.addItem(item);
+    app.basket$.subscribe(basket => {
+      expect(basket.filter(i => i.id === item.id)[0]).toBeDefined();
+      done();
+    });
   });
+  it("should properly remove items", done => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.debugElement.componentInstance;
+    const item = { id: "1", name: "test", price: 5 };
+    app.removeItem(item);
+    app.basket$.subscribe(basket => {
+      expect(basket.filter(i => i.id != item.id).length).toEqual(basket.length);
+      done();
+    });
+  })
 });
