@@ -1,4 +1,5 @@
 import { sumPrice, getTotalPrice } from "./app.component";
+import { normalizeBasketItems } from "./redux/basket.reducer";
 
 describe("pure helper functions", () => {
   describe("sumPrice function", () => {
@@ -30,6 +31,48 @@ describe("pure helper functions", () => {
     });
     it("should round up to cents", () => {
       expect(getTotalPrice(0.5, 34)).toEqual(0.33);
+    });
+  });
+  describe("normalizeBasketItems function", () => {
+    const createBasketItems = [
+      {
+        id: "1",
+        name: "milk",
+        price: 2,
+        quantity: 1
+      },
+      {
+        id: "1",
+        name: "milk",
+        price: 2,
+        quantity: 2
+      },
+      {
+        id: "2",
+        name: "cheese",
+        price: 2.5,
+        quantity: 1
+      }
+    ];
+    const expectedBasketItems = [
+      {
+        id: "1",
+        name: "milk",
+        price: 2,
+        quantity: 3
+      },
+      {
+        id: "2",
+        name: "cheese",
+        price: 2.5,
+        quantity: 1
+      }
+    ];
+
+    it("should return 1 if the item of certain type has been added for 1st time to basket", () => {
+      expect(normalizeBasketItems(createBasketItems)).toEqual(
+        expectedBasketItems
+      );
     });
   });
 });
